@@ -13,7 +13,7 @@ class Product(models.Model):
     name = models.CharField(max_length=100)
     manufacturer = models.CharField(max_length=100)
     country_manufacturer = models.CharField(max_length=100)
-    category = models.ManyToManyField(Category)
+    category = models.ManyToManyField(Category,blank = True, null= True)
 
     def __str__(self):
         return self.name
@@ -32,6 +32,6 @@ class Order(models.Model):
     full_cost = models.IntegerField()
 
     def __str__(self):
-        return self.full_cost
+        return str(self.full_cost)
 
 
