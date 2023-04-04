@@ -16,9 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from magazine import urls as MagazineUrls
-
+from auth import urls as AuthUrls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(MagazineUrls))
+    path('api/', include(MagazineUrls)),
+    path('auth/', include(AuthUrls))
 ]

@@ -28,10 +28,9 @@ class Cart(models.Model):
 
 
 class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     products = models.ManyToManyField(Product)
     full_cost = models.IntegerField()
 
     def __str__(self):
         return str(self.full_cost)
-
-

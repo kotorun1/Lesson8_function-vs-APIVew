@@ -1,13 +1,14 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
-
+from .permissions import IsAdminUserOrReadOnly, IsClientOrAdminUser, IsOwner
 from .models import Order, Category, Cart, Product
 from .serializers import OrderSerializer, CategorySerializer, CartSerializer, ProductSerializer
 
 
 # Product CRUD
 @api_view(['GET', 'POST'])
+@permission_classes([IsAdminUserOrReadOnly])
 def ProductListView(request):
     if request.method == 'GET':
         products = Product.objects.all()
@@ -24,13 +25,13 @@ def ProductListView(request):
             return Response(data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-
+@permission_classes([IsAdminUserOrReadOnly])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 def ProductDetailView(request, pk):
     try:
         product = Product.objects.get(pk=pk)
     except:
-        return Response({"error":"This product is not available"}, status=HTTP_404_NOT_FOUND)
+        return Response({"error": "This product is not available"}, status=HTTP_404_NOT_FOUND)
     if request.method == 'GET':
         serializer = ProductSerializer(product)
         return Response(serializer.data)
@@ -53,6 +54,7 @@ def ProductDetailView(request, pk):
 
 # Category CRUD
 @api_view(['GET', 'POST'])
+@permission_classes([IsAdminUserOrReadOnly])
 def CategoryListView(request):
     if request.method == 'GET':
         categories = Category.objects.all()
@@ -71,11 +73,12 @@ def CategoryListView(request):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@permission_classes([IsAdminUserOrReadOnly])
 def CategoryDetailView(request, pk):
     try:
         category = Category.objects.get(pk=pk)
     except:
-        return Response({"error":"This category is not available"}, status=HTTP_404_NOT_FOUND)
+        return Response({"error": "This category is not available"}, status=HTTP_404_NOT_FOUND)
     if request.method == 'GET':
         serializer = CategorySerializer(category)
         return Response(serializer.data)
@@ -98,13 +101,14 @@ def CategoryDetailView(request, pk):
 
 # Order CRUD
 @api_view(['GET', 'POST'])
+@permission_classes([IsOwner])
 def OrderListView(request):
     if request.method == 'GET':
         products = Order.objects.all()
         serializer = OrderSerializer(products, many=True)
         return Response({"data": serializer.data}, status=HTTP_200_OK)
     if request.method == "POST":
-        serializer = OrderSerializer(data=request.data, )
+        serializer = OrderSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             data = {
@@ -116,11 +120,12 @@ def OrderListView(request):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@permission_classes([IsOwner])
 def OrderDetailView(request, pk):
     try:
         order = Order.objects.get(pk=pk)
     except:
-        return Response({"error":"This order is not available"}, status=HTTP_404_NOT_FOUND)
+        return Response({"error": "This order is not available"}, status=HTTP_404_NOT_FOUND)
     if request.method == 'GET':
         serializer = OrderSerializer(order)
         return Response(serializer.data)
@@ -143,6 +148,7 @@ def OrderDetailView(request, pk):
 
 # Order CRUD
 @api_view(['GET', 'POST'])
+@permission_classes([IsOwner])
 def CartListView(request):
     if request.method == 'GET':
         cart = Cart.objects.all()
@@ -161,11 +167,12 @@ def CartListView(request):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@permission_classes([IsOwner])
 def CartDetailView(request, pk):
     try:
         cart = Cart.objects.get(pk=pk)
     except:
-        return Response({"error":"This cart is not available"}, status=HTTP_404_NOT_FOUND)
+        return Response({"error": "This cart is not available"}, status=HTTP_404_NOT_FOUND)
     if request.method == 'GET':
         serializer = CartSerializer(cart)
         return Response(serializer.data)
