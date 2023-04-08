@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-uray4m!u#5*9_i$+!&rbi7mk*%t(dhu+&*&0b2-&ng%*r2a&8r
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,9 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'magazine.apps.MagazineConfig',
-    'auth.apps.AuthConfig',
     'rest_framework',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'customauth.apps.CustomauthConfig',
 ]
 
 MIDDLEWARE = [
@@ -129,7 +129,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK ={
     "DEFAULT_AUTHENTICATION_CLASSES" : (
-        "rest_framework.authentication.TokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
+        "customauth.authentication.BearerAuthentication",
     )
 }
+
+AUTH_USER_MODEL = 'customauth.CustomUser'

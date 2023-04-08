@@ -1,9 +1,10 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
-from .permissions import IsAdminUserOrReadOnly, IsClientOrAdminUser, IsOwner
+from .permissions import IsAdminUserOrReadOnly, IsClientReadOnlyOrAdminUser
 from .models import Order, Category, Cart, Product
 from .serializers import OrderSerializer, CategorySerializer, CartSerializer, ProductSerializer
+from rest_framework.permissions import IsAuthenticated
 
 
 # Product CRUD
@@ -14,6 +15,7 @@ def ProductListView(request):
         products = Product.objects.all()
         serializer = ProductSerializer(products, many=True)
         return Response({"data": serializer.data}, status=HTTP_200_OK)
+
     if request.method == "POST":
         serializer = ProductSerializer(data=request.data)
         if serializer.is_valid():
@@ -24,6 +26,7 @@ def ProductListView(request):
             }
             return Response(data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
 
 @permission_classes([IsAdminUserOrReadOnly])
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
@@ -65,7 +68,7 @@ def CategoryListView(request):
         if serializer.is_valid():
             serializer.save()
             data = {
-                "product_id": serializer.data['id'],
+                "category_id": serializer.data['id'],
                 "message": "Category was added!"
             }
             return Response(data, status=HTTP_201_CREATED)
@@ -101,10 +104,10 @@ def CategoryDetailView(request, pk):
 
 # Order CRUD
 @api_view(['GET', 'POST'])
-@permission_classes([IsOwner])
+@permission_classes([IsClientReadOnlyOrAdminUser])
 def OrderListView(request):
     if request.method == 'GET':
-        products = Order.objects.all()
+        products = Order.objects.filter(user=request.user)
         serializer = OrderSerializer(products, many=True)
         return Response({"data": serializer.data}, status=HTTP_200_OK)
     if request.method == "POST":
@@ -112,7 +115,7 @@ def OrderListView(request):
         if serializer.is_valid():
             serializer.save()
             data = {
-                "product_id": serializer.data['id'],
+                "order_id": serializer.data['id'],
                 "message": "Order was added!"
             }
             return Response(data, status=HTTP_201_CREATED)
@@ -120,10 +123,10 @@ def OrderListView(request):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes([IsOwner])
+@permission_classes([IsClientReadOnlyOrAdminUser])
 def OrderDetailView(request, pk):
     try:
-        order = Order.objects.get(pk=pk)
+        order = Order.objects.get(pk=pk, user=request.user)
     except:
         return Response({"error": "This order is not available"}, status=HTTP_404_NOT_FOUND)
     if request.method == 'GET':
@@ -148,10 +151,10 @@ def OrderDetailView(request, pk):
 
 # Order CRUD
 @api_view(['GET', 'POST'])
-@permission_classes([IsOwner])
+@permission_classes([IsAuthenticated])
 def CartListView(request):
     if request.method == 'GET':
-        cart = Cart.objects.all()
+        cart = Cart.objects.filter(user=request.user)
         serializer = CartSerializer(cart, many=True)
         return Response({"data": serializer.data}, status=HTTP_200_OK)
     if request.method == "POST":
@@ -159,7 +162,7 @@ def CartListView(request):
         if serializer.is_valid():
             serializer.save()
             data = {
-                "product_id": serializer.data['id'],
+                "cart_id": serializer.data['id'],
                 "message": "Cart was added!"
             }
             return Response(data, status=HTTP_201_CREATED)
@@ -167,10 +170,10 @@ def CartListView(request):
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
-@permission_classes([IsOwner])
+@permission_classes([IsAuthenticated])
 def CartDetailView(request, pk):
     try:
-        cart = Cart.objects.get(pk=pk)
+        cart = Cart.objects.get(pk=pk, user=request.user)
     except:
         return Response({"error": "This cart is not available"}, status=HTTP_404_NOT_FOUND)
     if request.method == 'GET':
